@@ -41,13 +41,35 @@
       animation: glow-pulse 2s infinite alternate;
     }
 
-    /* Spesifikasi Kertas Cetak & Font Bookman Old Style 10pt */
-    .isi-surat-font {
-      font-family: "Bookman Old Style", "Bookman", "URW Bookman L", "Garamond", serif !important;
-      font-size: 10pt !important;
-      line-height: 1.45 !important;
+    /* Container Pratinjau Kertas A4 Proporsional (210mm x 297mm) */
+    .a4-container {
+      width: 100%;
+      max-width: 21cm;
+      aspect-ratio: 210 / 297;
+      background: white;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      margin: 0 auto;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* CSS Variables untuk Kustomisasi Font Dinamis */
+    :root {
+      --doc-font-family: "Bookman Old Style", "Bookman", serif;
+      --doc-font-size: 10pt;
+      --doc-line-height: 1.45;
+      --doc-padding: 1.5cm 1.5cm 1.5cm 2cm;
+    }
+
+    /* Binding Class Khusus untuk Elemen Preview Surat */
+    .preview-doc-engine {
+      font-family: var(--doc-font-family) !important;
+      font-size: var(--doc-font-size) !important;
+      line-height: var(--doc-line-height) !important;
+      padding: var(--doc-padding) !important;
+    }
+
+    /* Penyesuaian Saat Dicetak Ke Kertas Fisik / Save PDF */
     @media print {
       body * {
         visibility: hidden;
@@ -59,19 +81,23 @@
         position: absolute;
         left: 0;
         top: 0;
-        width: 100%;
+        width: 21cm !important;
+        height: 29.7cm !important;
         color: #000 !important;
         background-color: #fff !important;
         box-shadow: none !important;
         border: none !important;
-        padding: 0 !important;
+        font-family: var(--doc-font-family) !important;
+        font-size: var(--doc-font-size) !important;
+        line-height: var(--doc-line-height) !important;
+        padding: var(--doc-padding) !important;
       }
       .no-print {
         display: none !important;
       }
       @page {
         size: A4;
-        margin: 1cm 1.5cm 1.5cm 2cm;
+        margin: 0; /* Margin diatur murni lewat CSS padding dokumen */
       }
     }
   </style>
@@ -113,7 +139,7 @@
     <!-- HEADER NAVIGASI -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
       <div>
-        <h2 class="text-2xl font-bold">Pembuatan Surat Tugas Pemerimen</h2>
+        <h2 class="text-2xl font-bold">Pembuatan Surat Tugas Pemeriksaan</h2>
         <p class="text-slate-600 dark:text-slate-400">Kelola konsideran secara dinamis dan cetak langsung ke lembaran resmi.</p>
       </div>
       
@@ -143,7 +169,7 @@
     <div id="section-buat" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
       
       <!-- FORM INPUT -->
-      <form id="st-form" onsubmit="handleFormSubmit(event)" class="lg:col-span-7 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 space-y-6">
+      <form id="st-form" onsubmit="handleFormSubmit(event)" class="lg:col-span-6 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 space-y-6">
         <input type="hidden" id="form-id">
         
         <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-4">
@@ -292,129 +318,177 @@
 
       </form>
 
-      <!-- PREVIEW & ENGINE CETAK -->
-      <div class="lg:col-span-5 flex flex-col space-y-4">
+      <!-- PREVIEW & ENGINE CETAK (KANAN) -->
+      <div class="lg:col-span-6 flex flex-col space-y-4">
         
-        <div class="bg-slate-800 text-white p-4 rounded-xl flex items-center justify-between shadow-lg">
+        <!-- PANEL STYLIST DOKUMEN (KUSTOMISASI FONT & UKURAN) -->
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 space-y-3">
+          <h4 class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center">
+            <i class="fa-solid fa-wand-magic-sparkles mr-2 animate-bounce"></i>Pengaturan Format & Font Dokumen
+          </h4>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-[9px] text-slate-500 uppercase font-semibold mb-1">Jenis Font</label>
+              <select id="font_family_select" onchange="applyStylistSettings()" class="w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 p-1.5 dark:text-white">
+                <option value='"Bookman Old Style", "Bookman", "URW Bookman L", "Garamond", serif'>Bookman Old Style</option>
+                <option value='"Times New Roman", Times, Georgia, serif'>Times New Roman</option>
+                <option value='Arial, Helvetica, sans-serif'>Arial (Sans-serif)</option>
+                <option value='Georgia, serif'>Georgia</option>
+                <option value='"Garamond", "EB Garamond", serif'>Garamond</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[9px] text-slate-500 uppercase font-semibold mb-1">Ukuran Font</label>
+              <select id="font_size_select" onchange="applyStylistSettings()" class="w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 p-1.5 dark:text-white">
+                <option value="8pt">8pt</option>
+                <option value="9pt">9pt</option>
+                <option value="10pt" selected>10pt (Standar)</option>
+                <option value="11pt">11pt</option>
+                <option value="12pt">12pt</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[9px] text-slate-500 uppercase font-semibold mb-1">Spasi Baris</label>
+              <select id="line_height_select" onchange="applyStylistSettings()" class="w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 p-1.5 dark:text-white">
+                <option value="1.2">Sempit (1.2)</option>
+                <option value="1.35">Sedang (1.35)</option>
+                <option value="1.45" selected>Standar (1.45)</option>
+                <option value="1.6">Longgar (1.6)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[9px] text-slate-500 uppercase font-semibold mb-1">Batas Margin</label>
+              <select id="margin_select" onchange="applyStylistSettings()" class="w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 p-1.5 dark:text-white">
+                <option value="1cm 1.5cm 1.5cm 1.5cm">Sempit (1cm)</option>
+                <option value="1cm 1.5cm 1.5cm 2cm" selected>Normal (2cm Kiri)</option>
+                <option value="1.5cm 2cm 2cm 2.5cm">Lebar (2.5cm Kiri)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-800 text-white p-3 rounded-xl flex items-center justify-between shadow-lg">
           <div class="flex items-center space-x-2">
             <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span class="font-bold text-xs">PREVIEW (BOOKMAN OLD STYLE 10PT)</span>
+            <span class="font-bold text-[10px] tracking-wider">A4 SHEET PREVIEW</span>
           </div>
           <button onclick="printSuratTugas()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-900 font-bold px-4 py-2 rounded-lg text-xs transition-all flex items-center">
             <i class="fa-solid fa-print mr-1.5"></i>CETAK / PDF
           </button>
         </div>
 
-        <!-- CANVAS DOKUMEN PREVIEW -->
-        <div class="bg-white text-black p-8 sm:p-12 rounded-2xl shadow-2xl border border-slate-300 overflow-y-auto max-h-[750px] transition-all relative" id="print-area">
-          
-          <!-- KOP SURAT IMAGE -->
-          <div class="w-full border-b border-slate-200 pb-2 mb-4">
-            <img src="KOP SURAT.jpg" alt="KOP SURAT" class="w-full h-auto object-contain select-none pointer-events-none" onerror="this.src='https://placehold.co/1000x220/ffffff/000000?text=KOP+SURAT.jpg+Tidak+Ditemukan'">
-          </div>
-
-          <!-- JUDUL DOKUMEN -->
-          <div class="text-center mb-6 isi-surat-font text-black">
-            <h3 class="text-sm font-bold underline uppercase tracking-widest m-0 leading-tight">SURAT TUGAS</h3>
-            <p class="text-xs m-0 font-bold">Nomor : <span id="view_nomor_surat">ST. ______ /K.18/SKSDAW II/______/2026</span></p>
-          </div>
-
-          <div class="text-center mb-4 isi-surat-font text-black">
-            <h4 class="text-xs font-bold tracking-wide">KEPALA BALAI,</h4>
-          </div>
-
-          <!-- KONSIDERAN (MENIMBANG & DASAR) -->
-          <div class="space-y-4 text-xs text-justify leading-relaxed isi-surat-font text-black">
+        <!-- CANVAS DOKUMEN PREVIEW (TRUE ASPECT RATIO A4) -->
+        <div class="a4-container overflow-y-auto" id="preview-scroll-wrapper">
+          <div class="w-full h-full text-black preview-doc-engine" id="print-area">
             
-            <!-- Menimbang (Baku) -->
-            <div class="grid grid-cols-12 gap-1 align-top">
-              <div class="col-span-2 font-bold">Menimbang</div>
-              <div class="col-span-1 text-center">:</div>
-              <div class="col-span-9 space-y-1.5">
-                <div class="flex items-start">
-                  <span class="mr-2 font-bold">a.</span>
-                  <p>bahwa dalam rangka memberikan pelayanan kepada masyarakat untuk pemanfaatan tumbuhan dan satwa liar;</p>
-                </div>
-                <div class="flex items-start">
-                  <span class="mr-2 font-bold">b.</span>
-                  <p>bahwa dalam kegiatan pemanfaatan tumbuhan dan satwa liar beserta bagian-bagiannya, perlu diterbitkan SATS-DN untuk pengangkutannya;</p>
-                </div>
-                <div class="flex items-start">
-                  <span class="mr-2 font-bold">c.</span>
-                  <p>bahwa sebelum diterbitkannya SATS-DN perlu dilakukan pemeriksaan terhadap spesimen yang akan diangkut.</p>
-                </div>
-              </div>
+            <!-- KOP SURAT IMAGE (Directly targeting image_adac1c.png verbatim) -->
+            <div class="w-full border-b border-slate-200 pb-2 mb-4">
+              <img src="image_adac1c.png" alt="KOP SURAT" class="w-full h-auto object-contain select-none pointer-events-none" onerror="this.src='https://placehold.co/1000x220/ffffff/000000?text=KOP+SURAT+image_adac1c.png+Tidak+Ditemukan'">
             </div>
 
-            <!-- Dasar -->
-            <div class="grid grid-cols-12 gap-1 align-top">
-              <div class="col-span-2 font-bold">Dasar</div>
-              <div class="col-span-1 text-center">:</div>
-              <div class="col-span-9 space-y-1.5">
-                <div class="flex items-start">
-                  <span class="mr-2 font-bold">1.</span>
-                  <p>Peraturan Menteri Kehutanan Nomor 4 Tahun 2025 Tentang Organisasi Dan Tata Kerja Unit Pelaksana Teknis Direktorat Jenderal Konservasi Sumber Daya Alam Dan Ekosistem;</p>
-                </div>
-                <div class="space-y-1.5" id="view-dasar-box">
-                  <!-- Live dynamic dasar starting from 2 -->
-                </div>
-              </div>
+            <!-- JUDUL DOKUMEN -->
+            <div class="text-center mb-6 isi-surat-font text-black">
+              <h3 class="text-sm font-bold underline uppercase tracking-widest m-0 leading-tight">SURAT TUGAS</h3>
+              <p class="text-xs m-0 font-bold">Nomor : <span id="view_nomor_surat">ST. ______ /K.18/SKSDAW II/______/2026</span></p>
             </div>
 
-          </div>
-
-          <div class="text-center my-5 isi-surat-font text-black">
-            <h4 class="text-xs font-bold tracking-widest uppercase">MEMBERI TUGAS,</h4>
-          </div>
-
-          <!-- KEPADA DAN UNTUK -->
-          <div class="space-y-4 text-xs text-justify leading-relaxed isi-surat-font text-black">
-            
-            <!-- Kepada -->
-            <div class="grid grid-cols-12 gap-1 align-top">
-              <div class="col-span-2 font-bold">Kepada</div>
-              <div class="col-span-1 text-center">:</div>
-              <div class="col-span-9 space-y-3" id="view-petugas-box">
-                <!-- Live updated officers list -->
-              </div>
+            <div class="text-center mb-4 isi-surat-font text-black">
+              <h4 class="text-xs font-bold tracking-wide">KEPALA BALAI,</h4>
             </div>
 
-            <!-- Untuk -->
-            <div class="grid grid-cols-12 gap-1 align-top mt-3">
-              <div class="col-span-2 font-bold">Untuk</div>
-              <div class="col-span-1 text-center">:</div>
-              <div class="col-span-9 space-y-2">
-                <div class="flex items-start">
-                  <span class="mr-2 font-bold">1.</span>
-                  <p id="view_tugas_untuk_1" class="leading-relaxed">..................</p>
-                </div>
-                <div class="flex items-start">
-                  <span class="mr-2 font-bold">2.</span>
-                  <p>Membuat laporan tertulis setelah selesainya kegiatan yang dituangkan ke dalam Berita Acara Pemeriksaan (BAP).</p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          <div class="text-xs text-justify leading-relaxed isi-surat-font text-black mt-5">
-            Demikian untuk dilaksanakan dengan penuh tanggung jawab.
-          </div>
-
-          <!-- TANDA TANGAN -->
-          <div class="mt-8 flex justify-end isi-surat-font text-black text-xs">
-            <div class="w-64 text-left">
-              <p>Tenggarong, <span id="view_tanggal_st">15 Juni 2026</span></p>
-              <p>a.n. Kepala Balai,</p>
-              <p id="view_penandatangan_jabatan" class="font-bold">Kepala Seksi KSDA Wilayah II,</p>
+            <!-- KONSIDERAN (MENIMBANG & DASAR) -->
+            <div class="space-y-4 text-xs text-justify leading-relaxed isi-surat-font text-black">
               
-              <div class="h-16"></div>
-              
-              <p class="font-bold underline m-0" id="view_penandatangan_nama">Suriawati Halim, S.Hut., M.P.</p>
-              <p class="m-0">NIP. <span id="view_penandatangan_nip">19751127 200003 2 001</span></p>
-            </div>
-          </div>
+              <!-- Menimbang (Baku) -->
+              <div class="grid grid-cols-12 gap-1 align-top">
+                <div class="col-span-2 font-bold">Menimbang</div>
+                <div class="col-span-1 text-center">:</div>
+                <div class="col-span-9 space-y-1.5">
+                  <div class="flex items-start">
+                    <span class="mr-2 font-bold">a.</span>
+                    <p>bahwa dalam rangka memberikan pelayanan kepada masyarakat untuk pemanfaatan tumbuhan dan satwa liar;</p>
+                  </div>
+                  <div class="flex items-start">
+                    <span class="mr-2 font-bold">b.</span>
+                    <p>bahwa dalam kegiatan pemanfaatan tumbuhan dan satwa liar beserta bagian-bagiannya, perlu diterbitkan SATS-DN untuk pengangkutannya;</p>
+                  </div>
+                  <div class="flex items-start">
+                    <span class="mr-2 font-bold">c.</span>
+                    <p>bahwa sebelum diterbitkannya SATS-DN perlu dilakukan pemeriksaan terhadap spesimen yang akan diangkut.</p>
+                  </div>
+                </div>
+              </div>
 
+              <!-- Dasar -->
+              <div class="grid grid-cols-12 gap-1 align-top">
+                <div class="col-span-2 font-bold">Dasar</div>
+                <div class="col-span-1 text-center">:</div>
+                <div class="col-span-9 space-y-1.5">
+                  <div class="flex items-start">
+                    <span class="mr-2 font-bold">1.</span>
+                    <p>Peraturan Menteri Kehutanan Nomor 4 Tahun 2025 Tentang Organisasi Dan Tata Kerja Unit Pelaksana Teknis Direktorat Jenderal Konservasi Sumber Daya Alam Dan Ekosistem;</p>
+                  </div>
+                  <div class="space-y-1.5" id="view-dasar-box">
+                    <!-- Live dynamic dasar starting from 2 -->
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="text-center my-5 isi-surat-font text-black">
+              <h4 class="text-xs font-bold tracking-widest uppercase">MEMBERI TUGAS,</h4>
+            </div>
+
+            <!-- KEPADA DAN UNTUK -->
+            <div class="space-y-4 text-xs text-justify leading-relaxed isi-surat-font text-black">
+              
+              <!-- Kepada -->
+              <div class="grid grid-cols-12 gap-1 align-top">
+                <div class="col-span-2 font-bold">Kepada</div>
+                <div class="col-span-1 text-center">:</div>
+                <div class="col-span-9 space-y-3" id="view-petugas-box">
+                  <!-- Live updated officers list -->
+                </div>
+              </div>
+
+              <!-- Untuk -->
+              <div class="grid grid-cols-12 gap-1 align-top mt-3">
+                <div class="col-span-2 font-bold">Untuk</div>
+                <div class="col-span-1 text-center">:</div>
+                <div class="col-span-9 space-y-2">
+                  <div class="flex items-start">
+                    <span class="mr-2 font-bold">1.</span>
+                    <p id="view_tugas_untuk_1" class="leading-relaxed">..................</p>
+                  </div>
+                  <div class="flex items-start">
+                    <span class="mr-2 font-bold">2.</span>
+                    <p>Membuat laporan tertulis setelah selesainya kegiatan yang dituangkan ke dalam Berita Acara Pemeriksaan (BAP).</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="text-xs text-justify leading-relaxed isi-surat-font text-black mt-5">
+              Demikian untuk dilaksanakan dengan penuh tanggung jawab.
+            </div>
+
+            <!-- TANDA TANGAN -->
+            <div class="mt-8 flex justify-end isi-surat-font text-black text-xs">
+              <div class="w-64 text-left">
+                <p>Tenggarong, <span id="view_tanggal_st">15 Juni 2026</span></p>
+                <p>a.n. Kepala Balai,</p>
+                <p id="view_penandatangan_jabatan" class="font-bold">Kepala Seksi KSDA Wilayah II,</p>
+                
+                <div class="h-16"></div>
+                
+                <p class="font-bold underline m-0" id="view_penandatangan_nama">Suriawati Halim, S.Hut., M.P.</p>
+                <p class="m-0">NIP. <span id="view_penandatangan_nip">19751127 200003 2 001</span></p>
+              </div>
+            </div>
+
+          </div>
         </div>
 
       </div>
@@ -459,14 +533,6 @@
 
   </main>
 
-  <!-- TOAST NOTIFICATION CONTAINER -->
-  <div id="toast" class="hidden fixed bottom-5 right-5 z-50 flex items-center w-full max-w-xs p-4 space-x-3 text-slate-500 bg-white rounded-lg shadow dark:text-slate-400 dark:bg-slate-800 border-l-4 border-emerald-500 transition-all transform translate-y-10 opacity-0">
-    <div id="toast-icon" class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-emerald-500 bg-emerald-100 rounded-lg dark:bg-emerald-800 dark:text-emerald-200">
-      <i class="fa-solid fa-check"></i>
-    </div>
-    <div id="toast-message" class="text-sm font-normal">Pesan sukses di sini.</div>
-  </div>
-
   <!-- JS LOGIC CORE -->
   <script>
     // ==========================================
@@ -488,6 +554,7 @@
       loadHistoryData();
       loadTemplateDefault();
       setupGlobalListeners();
+      applyStylistSettings(); // Load Default Stylist config
     };
 
     function startClock() {
@@ -534,6 +601,33 @@
         });
       } catch (e) {
         console.error("Theme init error:", e);
+      }
+    }
+
+    // Menjalankan kustomisasi font, ukuran font, spasi baris, dan margin dinamis
+    function applyStylistSettings() {
+      try {
+        const fontFamily = document.getElementById("font_family_select").value;
+        const fontSize = document.getElementById("font_size_select").value;
+        const lineHeight = document.getElementById("line_height_select").value;
+        const padding = document.getElementById("margin_select").value;
+
+        // Terapkan ke root CSS Variables agar dideteksi preview dan print renderer
+        document.documentElement.style.setProperty('--doc-font-family', fontFamily);
+        document.documentElement.style.setProperty('--doc-font-size', fontSize);
+        document.documentElement.style.setProperty('--doc-line-height', lineHeight);
+        document.documentElement.style.setProperty('--doc-padding', padding);
+
+        // Update preview render styling secara langsung
+        const printArea = document.getElementById("print-area");
+        if (printArea) {
+          printArea.style.fontFamily = fontFamily;
+          printArea.style.fontSize = fontSize;
+          printArea.style.lineHeight = lineHeight;
+          printArea.style.padding = padding;
+        }
+      } catch(e) {
+        console.error("Stylist settings application failed:", e);
       }
     }
 
