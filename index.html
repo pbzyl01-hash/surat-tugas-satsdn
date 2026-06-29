@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-ST SATS-DN | BKSDA Kalimantan Timur</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          animation: {
+            'glow-pulse': 'glow-pulse 2s infinite alternate',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @import url('https://fonts.cdnfonts.com/css/bookman-old-style');
+
+    @keyframes glow-pulse {
+      0% {
+        text-shadow: 0 0 4px rgba(16, 185, 129, 0.4), 0 0 12px rgba(16, 185, 129, 0.2);
+        transform: scale(1);
+      }
+      100% {
+        text-shadow: 0 0 16px rgba(16, 185, 129, 0.8), 0 0 24px rgba(16, 185, 129, 0.6);
+        transform: scale(1.02);
+      }
+    }
+
+    .glow-title {
+      animation: glow-pulse 2s infinite alternate;
+    }
+
+    /* Spesifikasi Kertas Cetak & Font Bookman Old Style 10pt */
+    .isi-surat-font {
+      font-family: "Bookman Old Style", "Bookman", "URW Bookman L", "Garamond", serif !important;
+      font-size: 10pt !important;
+      line-height: 1.45 !important;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-area, #print-area * {
+        visibility: visible;
+      }
+      #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        color: #000 !important;
+        background-color: #fff !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      @page {
+        size: A4;
+        margin: 1cm 1.5cm 1.5cm 2cm;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300">
+
+  <!-- NAVBAR UTAMA -->
+  <header class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <div class="flex items-center space-x-3">
+        <div class="bg-emerald-600 p-2 rounded-lg text-white">
+          <i class="fa-solid fa-file-signature text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-lg md:text-xl font-extrabold text-emerald-600 dark:text-emerald-400 glow-title tracking-wide uppercase">
+            E-ST SATS-DN
+          </h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400">BKSDA Kaltim - SKW II Tenggarong</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <div class="hidden md:flex flex-col text-right">
+          <span id="live-clock" class="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400">00:00:00</span>
+          <span id="live-date" class="text-xs text-slate-500 dark:text-slate-400">Senin, 1 Januari 2026</span>
+        </div>
+        <button id="theme-toggle" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:ring-2 hover:ring-emerald-500 transition-all text-slate-600 dark:text-slate-300">
+          <i class="fa-solid fa-sun hidden dark:block"></i>
+          <i class="fa-solid fa-moon block dark:hidden"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- HEADER NAVIGASI -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+      <div>
+        <h2 class="text-2xl font-bold">Pembuatan Surat Tugas Pemerimen</h2>
+        <p class="text-slate-600 dark:text-slate-400">Kelola konsideran secara dinamis dan cetak langsung ke lembaran resmi.</p>
+      </div>
+      
+      <div class="flex bg-slate-200/80 dark:bg-slate-800/80 p-1 rounded-xl w-full sm:w-auto">
+        <button onclick="switchTab('buat')" id="tab-buat" class="flex-1 sm:flex-initial px-5 py-2 rounded-lg font-medium text-sm transition-all duration-200 bg-emerald-600 text-white shadow-md">
+          <i class="fa-solid fa-pen-to-square mr-2"></i>Buat Surat
+        </button>
+        <button onclick="switchTab('riwayat')" id="tab-riwayat" class="flex-1 sm:flex-initial px-5 py-2 rounded-lg font-medium text-sm transition-all duration-200 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+          <i class="fa-solid fa-history mr-2"></i>Daftar Arsip
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL KONFIRMASI KUSTOM -->
+    <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2" id="confirm-title">Konfirmasi Tindakan</h3>
+        <p class="text-slate-600 dark:text-slate-300 text-sm mb-6" id="confirm-body">Apakah Anda yakin ingin melakukan hal ini?</p>
+        <div class="flex justify-end space-x-3">
+          <button id="confirm-cancel-btn" class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Batal</button>
+          <button id="confirm-ok-btn" class="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700">Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION TAB 1: FORM PEMBUATAN -->
+    <div id="section-buat" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- FORM INPUT -->
+      <form id="st-form" onsubmit="handleFormSubmit(event)" class="lg:col-span-7 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 space-y-6">
+        <input type="hidden" id="form-id">
+        
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-4">
+          <h3 class="text-lg font-bold text-slate-800 dark:text-slate-200">
+            <i class="fa-solid fa-file-signature text-emerald-600 mr-2"></i>Konfigurasi Surat Tugas
+          </h3>
+          <button type="button" onclick="loadTemplateDefault()" class="text-xs px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 font-semibold">
+            <i class="fa-solid fa-rotate-left mr-1"></i>Muat Isian Default
+          </button>
+        </div>
+
+        <!-- Bagian 1: Nomor Surat Terbatas & Tanggal -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">No Agenda ST</label>
+            <input type="text" id="no_agenda" class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 p-2 focus:ring-2 focus:ring-emerald-500 dark:text-white" placeholder="Contoh: 248" required>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bulan (Angka/Romawi)</label>
+            <input type="text" id="bulan_surat" class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 p-2 focus:ring-2 focus:ring-emerald-500 dark:text-white" placeholder="Contoh: 06" required>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tanggal Terbit</label>
+            <input type="date" id="tanggal_st" class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 p-2 focus:ring-2 focus:ring-emerald-500 dark:text-white" required>
+          </div>
+        </div>
+
+        <!-- Bagian 2: Menimbang Baku Info -->
+        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div class="flex items-center justify-between mb-2">
+            <span class="block text-xs font-bold text-slate-400 uppercase">Konsideran: Menimbang (Baku)</span>
+            <span class="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded font-bold">TERKUNCI</span>
+          </div>
+          <p class="text-xs text-slate-400 italic">Poin menimbang a, b, dan c telah dibakukan sesuai standar resmi instansi dan tidak memerlukan pengisian manual.</p>
+        </div>
+
+        <!-- Bagian 3: Dasar Hukum Dinamis (Mulai dari Dasar 2) -->
+        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="block text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase">Konsideran: Dasar Hukum Tambahan</span>
+            <button type="button" onclick="addDasarItem('')" class="text-xs px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center">
+              <i class="fa-solid fa-plus mr-1"></i>Tambah Dasar
+            </button>
+          </div>
+          <div class="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 mb-2">
+            <p class="text-xs font-bold text-slate-500">Dasar 1 (Baku):</p>
+            <p class="text-xs text-slate-400">Peraturan Menteri Kehutanan Nomor 4 Tahun 2025 Tentang Organisasi Dan Tata Kerja Unit Pelaksana Teknis Direktorat Jenderal Konservasi Sumber Daya Alam Dan Ekosistem;</p>
+          </div>
+          <div id="dasar-list-container" class="space-y-2">
+            <!-- Dynamic elements injected here starting from index 2 -->
+          </div>
+        </div>
+
+        <!-- Bagian 4: Personel Dinamis -->
+        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="block text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase">Personel Yang Ditugaskan</span>
+            <button type="button" onclick="addPetugasItem()" class="text-xs px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center">
+              <i class="fa-solid fa-user-plus mr-1"></i>Tambah Personel
+            </button>
+          </div>
+          <div id="petugas-list-container" class="space-y-4">
+            <!-- Dynamic elements injected here -->
+          </div>
+        </div>
+
+        <!-- Bagian 5: Uraian Tugas Utama (Untuk 1 - Terstruktur) -->
+        <div class="space-y-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+          <span class="block text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase">Uraian Tugas Utama (Untuk)</span>
+          
+          <div class="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 rounded-xl space-y-3">
+            <p class="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Penyusun Kalimat Otomatis (Tugas 1)</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[10px] text-slate-500 uppercase font-semibold">Nama Perusahaan</label>
+                <input type="text" id="perusahaan_tugas" class="w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-2 dark:text-white" placeholder="Contoh: PT. Cahaya Gaharu Berkah" required>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500 uppercase font-semibold">Nama Kota Perusahaan</label>
+                <input type="text" id="kota_tugas" class="w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-2 dark:text-white" placeholder="Contoh: Samarinda" required>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500 uppercase font-semibold">Bagian Kategori</label>
+                <select id="kategori_spesimen" class="w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-2 dark:text-white">
+                  <option value="tumbuhan">tumbuhan</option>
+                  <option value="satwa liar">satwa liar</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500 uppercase font-semibold">Nama Lokal / Indonesia</label>
+                <input type="text" id="nama_lokal_spesimen" class="w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-2 dark:text-white" placeholder="Contoh: Kemedangan" required>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500 uppercase font-semibold">Nama Ilmiah (Akan Tercetak Miring)</label>
+                <input type="text" id="nama_ilmiah_spesimen" class="w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-2 dark:text-white" placeholder="Contoh: Aquilaria malacensis" required>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500 uppercase font-semibold">Tanggal Pelaksanaan Tugas</label>
+                <input type="date" id="tanggal_pelaksanaan" class="w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-2 dark:text-white" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+            <p class="text-xs font-bold text-slate-500">Tugas 2 (Baku):</p>
+            <p class="text-xs text-slate-400">Membuat laporan tertulis setelah selesainya kegiatan yang dituangkan ke dalam Berita Acara Pemeriksaan (BAP).</p>
+          </div>
+        </div>
+
+        <!-- Bagian 6: Penandatangan -->
+        <div class="space-y-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+            <span class="block text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase">Pejabat Penandatangan</span>
+            <div class="flex items-center space-x-2 w-full md:w-auto">
+              <span class="text-[10px] text-slate-400 uppercase">Pilih Cepat:</span>
+              <select id="penandatangan_select" onchange="autoFillSignatory()" class="text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 p-1 dark:text-white">
+                <option value="">-- Manual --</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[10px] text-slate-500 uppercase">Nama Pejabat</label>
+              <input type="text" id="penandatangan_nama" class="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 p-2 dark:text-white" required>
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-500 uppercase">NIP</label>
+              <input type="text" id="penandatangan_nip" class="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 p-2 dark:text-white" required>
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-500 uppercase">Jabatan Struktur</label>
+              <input type="text" id="penandatangan_jabatan" class="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 p-2 dark:text-white" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 border-t border-slate-200 dark:border-slate-700 pt-4">
+          <button type="button" onclick="resetForm()" class="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 font-semibold transition-all">
+            Reset Form
+          </button>
+          <button type="submit" id="btn-submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg transition-all flex items-center">
+            <i class="fa-solid fa-cloud-arrow-up mr-2"></i>Simpan Surat Tugas
+          </button>
+        </div>
+
+      </form>
+
+      <!-- PREVIEW & ENGINE CETAK -->
+      <div class="lg:col-span-5 flex flex-col space-y-4">
+        
+        <div class="bg-slate-800 text-white p-4 rounded-xl flex items-center justify-between shadow-lg">
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="font-bold text-xs">PREVIEW (BOOKMAN OLD STYLE 10PT)</span>
+          </div>
+          <button onclick="printSuratTugas()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-900 font-bold px-4 py-2 rounded-lg text-xs transition-all flex items-center">
+            <i class="fa-solid fa-print mr-1.5"></i>CETAK / PDF
+          </button>
+        </div>
+
+        <!-- CANVAS DOKUMEN PREVIEW -->
+        <div class="bg-white text-black p-8 sm:p-12 rounded-2xl shadow-2xl border border-slate-300 overflow-y-auto max-h-[750px] transition-all relative" id="print-area">
+          
+          <!-- HINT KOP SURAT FISIK -->
+          <div class="print:hidden border-2 border-dashed border-slate-300 rounded-lg p-4 text-center mb-6 text-xs text-slate-400">
+            <i class="fa-solid fa-scissors mr-2"></i>Area Atas Kosong (Batas KOP Surat Fisik Anda akan menempati ruang kosong ini)
+          </div>
+
+          <!-- SPACE REVENUE / SPACE ADJUSTMENT FOR PHYSICAL LETTERHEAD -->
+          <div class="h-32 print:h-36"></div>
+
+          <!-- JUDUL DOKUMEN -->
+          <div class="text-center mb-6 isi-surat-font text-black">
+            <h3 class="text-sm font-bold underline uppercase tracking-widest m-0 leading-tight">SURAT TUGAS</h3>
+            <p class="text-xs m-0 font-bold">Nomor : <span id="view_nomor_surat">ST. ______ /K.18/SKSDAW II/______/2026</span></p>
+          </div>
+
+          <div class="text-center mb-4 isi-surat-font text-black">
+            <h4 class="text-xs font-bold tracking-wide">KEPALA BALAI,</h4>
+          </div>
+
+          <!-- KONSIDERAN (MENIMBANG & DASAR) -->
+          <div class="space-y-4 text-xs text-justify leading-relaxed isi-surat-font text-black">
+            
+            <!-- Menimbang (Baku) -->
+            <div class="grid grid-cols-12 gap-1 align-top">
+              <div class="col-span-2 font-bold">Menimbang</div>
+              <div class="col-span-1 text-center">:</div>
+              <div class="col-span-9 space-y-1.5">
+                <div class="flex items-start">
+                  <span class="mr-2 font-bold">a.</span>
+                  <p>bahwa dalam rangka memberikan pelayanan kepada masyarakat untuk pemanfaatan tumbuhan dan satwa liar;</p>
+                </div>
+                <div class="flex items-start">
+                  <span class="mr-2 font-bold">b.</span>
+                  <p>bahwa dalam kegiatan pemanfaatan tumbuhan dan satwa liar beserta bagian-bagiannya, perlu diterbitkan SATS-DN untuk pengangkutannya;</p>
+                </div>
+                <div class="flex items-start">
+                  <span class="mr-2 font-bold">c.</span>
+                  <p>bahwa sebelum diterbitkannya SATS-DN perlu dilakukan pemeriksaan terhadap spesimen yang akan diangkut.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dasar -->
+            <div class="grid grid-cols-12 gap-1 align-top">
+              <div class="col-span-2 font-bold">Dasar</div>
+              <div class="col-span-1 text-center">:</div>
+              <div class="col-span-9 space-y-1.5">
+                <div class="flex items-start">
+                  <span class="mr-2 font-bold">1.</span>
+                  <p>Peraturan Menteri Kehutanan Nomor 4 Tahun 2025 Tentang Organisasi Dan Tata Kerja Unit Pelaksana Teknis Direktorat Jenderal Konservasi Sumber Daya Alam Dan Ekosistem;</p>
+                </div>
+                <div class="space-y-1.5" id="view-dasar-box">
+                  <!-- Live dynamic dasar starting from 2 -->
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="text-center my-5 isi-surat-font text-black">
+            <h4 class="text-xs font-bold tracking-widest uppercase">MEMBERI TUGAS,</h4>
+          </div>
+
+          <!-- KEPADA DAN UNTUK -->
+          <div class="space-y-4 text-xs text-justify leading-relaxed isi-surat-font text-black">
+            
+            <!-- Kepada -->
+            <div class="grid grid-cols-12 gap-1 align-top">
+              <div class="col-span-2 font-bold">Kepada</div>
+              <div class="col-span-1 text-center">:</div>
+              <div class="col-span-9 space-y-3" id="view-petugas-box">
+                <!-- Live updated officers list -->
+              </div>
+            </div>
+
+            <!-- Untuk -->
+            <div class="grid grid-cols-12 gap-1 align-top mt-3">
+              <div class="col-span-2 font-bold">Untuk</div>
+              <div class="col-span-1 text-center">:</div>
+              <div class="col-span-9 space-y-2">
+                <div class="flex items-start">
+                  <span class="mr-2 font-bold">1.</span>
+                  <p id="view_tugas_untuk_1" class="leading-relaxed">..................</p>
+                </div>
+                <div class="flex items-start">
+                  <span class="mr-2 font-bold">2.</span>
+                  <p>Membuat laporan tertulis setelah selesainya kegiatan yang dituangkan ke dalam Berita Acara Pemeriksaan (BAP).</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="text-xs text-justify leading-relaxed isi-surat-font text-black mt-5">
+            Demikian untuk dilaksanakan dengan penuh tanggung jawab.
+          </div>
+
+          <!-- TANDA TANGAN -->
+          <div class="mt-8 flex justify-end isi-surat-font text-black text-xs">
+            <div class="w-64 text-left">
+              <p>Tenggarong, <span id="view_tanggal_st">15 Juni 2026</span></p>
+              <p>a.n. Kepala Balai,</p>
+              <p id="view_penandatangan_jabatan" class="font-bold">Kepala Seksi KSDA Wilayah II,</p>
+              
+              <div class="h-16"></div>
+              
+              <p class="font-bold underline m-0" id="view_penandatangan_nama">Suriawati Halim, S.Hut., M.P.</p>
+              <p class="m-0">NIP. <span id="view_penandatangan_nip">19751127 200003 2 001</span></p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- SECTION TAB 2: RIWAYAT ARSIP -->
+    <div id="section-riwayat" class="hidden space-y-6">
+      
+      <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="relative w-full md:w-96">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </span>
+          <input type="text" id="search-input" onkeyup="filterHistoryTable()" class="pl-10 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Cari nomor surat, petugas, atau perusahaan...">
+        </div>
+        <button onclick="loadHistoryData()" class="w-full md:w-auto bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950 dark:hover:bg-emerald-900 text-emerald-600 dark:text-emerald-400 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">
+          <i class="fa-solid fa-arrows-rotate mr-2"></i>Segarkan Riwayat
+        </button>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse" id="history-table">
+            <thead>
+              <tr class="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
+                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">No. Surat ST</th>
+                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tanggal ST</th>
+                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tugas Pemeriksaan (Perusahaan)</th>
+                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Petugas Pelaksana</th>
+                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="history-list" class="divide-y divide-slate-100 dark:divide-slate-700">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast" class="hidden fixed bottom-5 right-5 z-50 flex items-center w-full max-w-xs p-4 space-x-3 text-slate-500 bg-white rounded-lg shadow dark:text-slate-400 dark:bg-slate-800 border-l-4 border-emerald-500 transition-all transform translate-y-10 opacity-0">
+    <div id="toast-icon" class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-emerald-500 bg-emerald-100 rounded-lg dark:bg-emerald-800 dark:text-emerald-200">
+      <i class="fa-solid fa-check"></i>
+    </div>
+    <div id="toast-message" class="text-sm font-normal">Pesan sukses di sini.</div>
+  </div>
+
+  <!-- JS LOGIC CORE -->
+  <script>
+    // ==========================================
+    // CONFIGURATION: MASUKKAN URL WEB APP GAS ANDA DI SINI
+    // ==========================================
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw2LNS8Ow5JR-uYI1Zx_wTUppNhk-22cx4awrrDKu6bhcHGaVywpouWaqp72NwXV63E/exec"; 
+
+    let masterPegawai = [];
+    let listSuratTugas = [];
+    
+    // Arrays penampung state data dinamis input
+    let dasarData = [];
+    let petugasData = [];
+
+    window.onload = function() {
+      startClock();
+      initTheme();
+      loadMasterPegawai();
+      loadHistoryData();
+      loadTemplateDefault();
+      setupGlobalListeners();
+    };
+
+    function startClock() {
+      const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      
+      setInterval(() => {
+        try {
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString('id-ID', { hour12: false });
+          const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+          
+          const elClock = document.getElementById("live-clock");
+          const elDate = document.getElementById("live-date");
+
+          if (elClock) elClock.textContent = timeStr;
+          if (elDate) elDate.textContent = dateStr;
+        } catch (e) {
+          console.warn("Clock update error caught gracefully:", e);
+        }
+      }, 1000);
+    }
+
+    // Menginisialisasi Mode Gelap / Terang
+    function initTheme() {
+      try {
+        const themeToggleBtn = document.getElementById("theme-toggle");
+        if (!themeToggleBtn) return;
+
+        if (localStorage.getItem('color-theme') === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+
+        themeToggleBtn.addEventListener('click', function() {
+          if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('color-theme', 'light');
+          } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('color-theme', 'dark');
+          }
+        });
+      } catch (e) {
+        console.error("Theme init error:", e);
+      }
+    }
+
+    function switchTab(tab) {
+      const tabBuat = document.getElementById("tab-buat");
+      const tabRiwayat = document.getElementById("tab-riwayat");
+      const secBuat = document.getElementById("section-buat");
+      const secRiwayat = document.getElementById("section-riwayat");
+
+      if (tab === 'buat') {
+        if (tabBuat) tabBuat.className = "flex-1 sm:flex-initial px-5 py-2 rounded-lg font-medium text-sm transition-all duration-200 bg-emerald-600 text-white shadow-md";
+        if (tabRiwayat) tabRiwayat.className = "flex-1 sm:flex-initial px-5 py-2 rounded-lg font-medium text-sm transition-all duration-200 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white";
+        if (secBuat) secBuat.classList.remove("hidden");
+        if (secRiwayat) secRiwayat.classList.add("hidden");
+      } else {
+        if (tabRiwayat) tabRiwayat.className = "flex-1 sm:flex-initial px-5 py-2 rounded-lg font-medium text-sm transition-all duration-200 bg-emerald-600 text-white shadow-md";
+        if (tabBuat) tabBuat.className = "flex-1 sm:flex-initial px-5 py-2 rounded-lg font-medium text-sm transition-all duration-200 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white";
+        if (secRiwayat) secRiwayat.classList.remove("hidden");
+        if (secBuat) secBuat.classList.add("hidden");
+        loadHistoryData();
+      }
+    }
+
+    function openConfirmModal(title, text, onConfirm) {
+      const modal = document.getElementById("confirm-modal");
+      if (!modal) return;
+      
+      const elTitle = document.getElementById("confirm-title");
+      const elBody = document.getElementById("confirm-body");
+      if (elTitle) elTitle.innerText = title;
+      if (elBody) elBody.innerText = text;
+      
+      const btnOk = document.getElementById("confirm-ok-btn");
+      const btnCancel = document.getElementById("confirm-cancel-btn");
+      
+      const closeModal = () => modal.classList.add("hidden");
+      
+      if (btnOk) {
+        btnOk.onclick = () => {
+          onConfirm();
+          closeModal();
+        };
+      }
+      
+      if (btnCancel) btnCancel.onclick = closeModal;
+      modal.classList.remove("hidden");
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById("toast");
+      const toastMsg = document.getElementById("toast-message");
+      const toastIcon = document.getElementById("toast-icon");
+
+      if (!toast || !toastMsg || !toastIcon) return;
+
+      toastMsg.textContent = message;
+      if (type === 'error') {
+        toast.className = "fixed bottom-5 right-5 z-50 flex items-center w-full max-w-xs p-4 space-x-3 text-slate-500 bg-white rounded-lg shadow dark:text-slate-400 dark:bg-slate-800 border-l-4 border-rose-500 transition-all transform";
+        toastIcon.className = "inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-rose-500 bg-rose-100 rounded-lg dark:bg-rose-800 dark:text-rose-200";
+        toastIcon.innerHTML = `<i class="fa-solid fa-xmark"></i>`;
+      } else {
+        toast.className = "fixed bottom-5 right-5 z-50 flex items-center w-full max-w-xs p-4 space-x-3 text-slate-500 bg-white rounded-lg shadow dark:text-slate-400 dark:bg-slate-800 border-l-4 border-emerald-500 transition-all transform";
+        toastIcon.className = "inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-emerald-500 bg-emerald-100 rounded-lg dark:bg-emerald-800 dark:text-emerald-200";
+        toastIcon.innerHTML = `<i class="fa-solid fa-check"></i>`;
+      }
+
+      toast.classList.remove("hidden", "translate-y-10", "opacity-0");
+      toast.classList.add("translate-y-0", "opacity-100");
+
+      setTimeout(() => {
+        toast.classList.remove("translate-y-0", "opacity-100");
+        toast.classList.add("translate-y-10", "opacity-0");
+        setTimeout(() => toast.classList.add("hidden"), 300);
+      }, 3500);
+    }
+
+    // --- Dynamic Dasar inputs controller ---
+    function renderDasarInputs() {
+      const container = document.getElementById("dasar-list-container");
+      if (!container) return;
+
+      container.innerHTML = "";
+      dasarData.forEach((val, idx) => {
+        const item = document.createElement("div");
+        item.className = "flex items-center space-x-2";
+        item.innerHTML = `
+          <span class="text-xs font-bold text-slate-400 w-6">${idx + 2}.</span>
+          <textarea oninput="dasarData[${idx}] = this.value; updateLivePreview();" class="flex-grow text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 p-2 dark:text-white" rows="1">${val}</textarea>
+          <button type="button" onclick="removeDasarItem(${idx})" class="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg"><i class="fa-solid fa-trash-can"></i></button>
+        `;
+        container.appendChild(item);
+      });
+      updateLivePreview();
+    }
+
+    function addDasarItem(value = "") {
+      dasarData.push(value);
+      renderDasarInputs();
+    }
+
+    function removeDasarItem(idx) {
+      dasarData.splice(idx, 1);
+      renderDasarInputs();
+    }
+
+    // --- MANIPULASI PERSONEL DITUGASKAN ---
+    function renderPetugasInputs() {
+      const container = document.getElementById("petugas-list-container");
+      if (!container) return;
+
+      container.innerHTML = "";
+      petugasData.forEach((pet, idx) => {
+        const block = document.createElement("div");
+        block.className = "p-3 bg-white dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600 space-y-2 relative";
+        block.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-bold text-slate-500 dark:text-slate-400">Petugas #${idx + 1}</span>
+            <button type="button" onclick="removePetugasItem(${idx})" class="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 px-2 py-1 rounded text-xs"><i class="fa-solid fa-user-minus mr-1"></i>Hapus</button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+            <div class="md:col-span-2">
+              <label class="block text-[9px] text-slate-400 uppercase">Pilih Pegawai Master / Ketik Baru</label>
+              <select onchange="autoFillOfficerSelected(${idx}, this.value)" class="w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 p-1 dark:text-white">
+                <option value="">-- Pilih --</option>
+                ${masterPegawai.map((p, i) => `<option value="${i}" ${p.nama === pet.nama ? 'selected':''}>${p.nama}</option>`).join('')}
+              </select>
+              <input type="text" value="${pet.nama || ''}" oninput="petugasData[${idx}].nama = this.value; updateLivePreview();" class="mt-1 w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-1 dark:text-white" placeholder="Nama lengkap..." required>
+            </div>
+            <div>
+              <label class="block text-[9px] text-slate-400 uppercase">NIP</label>
+              <input type="text" value="${pet.nip || ''}" oninput="petugasData[${idx}].nip = this.value; updateLivePreview();" class="w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-1 dark:text-white" required>
+            </div>
+            <div>
+              <label class="block text-[9px] text-slate-400 uppercase">Jabatan</label>
+              <input type="text" value="${pet.jabatan || ''}" oninput="petugasData[${idx}].jabatan = this.value; updateLivePreview();" class="w-full text-xs rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-1 dark:text-white" required>
+            </div>
+          </div>
+        `;
+        container.appendChild(block);
+      });
+      updateLivePreview();
+    }
+
+    function addPetugasItem(nama = "", nip = "", jabatan = "") {
+      petugasData.push({ nama, nip, jabatan });
+      renderPetugasInputs();
+    }
+
+    function removePetugasItem(idx) {
+      petugasData.splice(idx, 1);
+      renderPetugasInputs();
+    }
+
+    function autoFillOfficerSelected(idx, val) {
+      if (val !== "") {
+        const peg = masterPegawai[val];
+        petugasData[idx].nama = peg.nama;
+        petugasData[idx].nip = peg.nip;
+        petugasData[idx].jabatan = peg.jabatan;
+      } else {
+        petugasData[idx].nama = "";
+        petugasData[idx].nip = "";
+        petugasData[idx].jabatan = "";
+      }
+      renderPetugasInputs();
+    }
+
+    // Helper formatting tanggal Indonesia
+    function formatIndoDate(dateStr) {
+      if (!dateStr) return "..................";
+      const d = new Date(dateStr);
+      const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    // Parser tanggal YYYY-MM-DD dari string Indonesia
+    function parseIndoDateToYYYYMMDD(indoDateStr) {
+      if (!indoDateStr) return "";
+      const parts = indoDateStr.split(" ");
+      if (parts.length < 3) return "";
+      const day = parts[0].padStart(2, '0');
+      const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      const monthIdx = months.findIndex(m => m.toLowerCase() === parts[1].toLowerCase());
+      if (monthIdx === -1) return "";
+      const month = String(monthIdx + 1).padStart(2, '0');
+      const year = parts[2];
+      return `${year}-${month}-${day}`;
+    }
+
+    // Parser Tugas Terstruktur
+    function parseTugasUntuk(str) {
+      const result = {
+        perusahaan: "PT. Cahaya Gaharu Berkah",
+        kota: "Samarinda",
+        kategori: "tumbuhan",
+        lokal: "Kemedangan",
+        ilmiah: "Aquilaria malacensis",
+        tanggal: ""
+      };
+      if (!str) return result;
+      const cleanStr = str.replace(/<[^>]*>/g, "");
+      const regex = /di kantor\s+(.*?),\s+(.*?)\s+untuk bagian\s+(tumbuhan|satwa liar)\s+jenis\s+(.*?)\s+\((.*?)\)\s+selama 1 \(satu\) hari pada tanggal\s+(.*)/i;
+      const match = cleanStr.match(regex);
+      if (match) {
+        result.perusahaan = match[1].trim();
+        result.kota = match[2].trim();
+        result.kategori = match[3].toLowerCase().trim();
+        result.lokal = match[4].trim();
+        result.ilmiah = match[5].trim();
+        result.tanggal = parseIndoDateToYYYYMMDD(match[6].trim().replace(/\.$/, ""));
+      }
+      return result;
+    }
+
+    // --- RENDER LIVE PREVIEW ---
+    function updateLivePreview() {
+      try {
+        const agendaEl = document.getElementById("no_agenda");
+        const bulanSuratEl = document.getElementById("bulan_surat");
+        const viewNoSuratEl = document.getElementById("view_nomor_surat");
+
+        if (viewNoSuratEl) {
+          const agenda = agendaEl ? agendaEl.value : "______";
+          const bln = bulanSuratEl ? bulanSuratEl.value : "______";
+          viewNoSuratEl.innerText = `ST. ${agenda} /K.18/SKSDAW II/${bln}/2026`;
+        }
+
+        const inputTglEl = document.getElementById("tanggal_st");
+        const viewTanggalStEl = document.getElementById("view_tanggal_st");
+        if (viewTanggalStEl) {
+          const inputTgl = inputTglEl ? inputTglEl.value : "";
+          if (inputTgl) {
+            viewTanggalStEl.innerText = formatIndoDate(inputTgl);
+          } else {
+            viewTanggalStEl.innerText = "______________";
+          }
+        }
+
+        // 2. Render Dasar ke Preview (Mulai dari indeks 2)
+        const dasarBox = document.getElementById("view-dasar-box");
+        if (dasarBox) {
+          dasarBox.innerHTML = "";
+          dasarData.forEach((val, idx) => {
+            dasarBox.innerHTML += `
+              <div class="flex items-start">
+                <span class="mr-2 font-bold">${idx + 2}.</span>
+                <p>${val || '..................'}</p>
+              </div>
+            `;
+          });
+        }
+
+        // 3. Render Kepada (Petugas) ke Preview
+        const petugasBox = document.getElementById("view-petugas-box");
+        if (petugasBox) {
+          petugasBox.innerHTML = "";
+          petugasData.forEach((pet, idx) => {
+            petugasBox.innerHTML += `
+              <div class="text-xs">
+                <div class="grid grid-cols-12">
+                  <span class="col-span-1 font-bold">${idx + 1}.</span>
+                  <span class="col-span-3">Nama</span>
+                  <span class="col-span-1">:</span>
+                  <span class="col-span-7 font-bold">${pet.nama || '___________________'}</span>
+                </div>
+                <div class="grid grid-cols-12">
+                  <span class="col-span-1"></span>
+                  <span class="col-span-3">NIP</span>
+                  <span class="col-span-1">:</span>
+                  <span class="col-span-7">${pet.nip || '___________________'}</span>
+                </div>
+                <div class="grid grid-cols-12">
+                  <span class="col-span-1"></span>
+                  <span class="col-span-3">Jabatan</span>
+                  <span class="col-span-1">:</span>
+                  <span class="col-span-7">${pet.jabatan || '___________________'}</span>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        // 4. Kompilasi & Render Tugas 1 Terstruktur
+        const viewTugasUntuk1 = document.getElementById("view_tugas_untuk_1");
+        if (viewTugasUntuk1) {
+          const pers = document.getElementById("perusahaan_tugas").value || "..................";
+          const kt = document.getElementById("kota_tugas").value || "..................";
+          const kat = document.getElementById("kategori_spesimen").value;
+          const lok = document.getElementById("nama_lokal_spesimen").value || "..................";
+          const ilm = document.getElementById("nama_ilmiah_spesimen").value || "..................";
+          const tglPelRaw = document.getElementById("tanggal_pelaksanaan").value;
+          const tglPelFormatted = formatIndoDate(tglPelRaw);
+
+          const compiledTugas1 = `Melaksanakan pemeriksaan spesimen di kantor ${pers}, ${kt} untuk bagian ${kat} jenis ${lok} (<i>${ilm}</i>) selama 1 (satu) hari pada tanggal ${tglPelFormatted}.`;
+          viewTugasUntuk1.innerHTML = compiledTugas1;
+        }
+
+        // 5. Render Penandatangan
+        const viewPenandatanganNama = document.getElementById("view_penandatangan_nama");
+        const penandatanganNama = document.getElementById("penandatangan_nama");
+        if (viewPenandatanganNama) {
+          viewPenandatanganNama.innerText = penandatanganNama ? penandatanganNama.value : "_______________";
+        }
+
+        const viewPenandatanganNip = document.getElementById("view_penandatangan_nip");
+        const penandatanganNip = document.getElementById("penandatangan_nip");
+        if (viewPenandatanganNip) {
+          viewPenandatanganNip.innerText = penandatanganNip ? penandatanganNip.value : "_______________";
+        }
+
+        const viewPenandatanganJabatan = document.getElementById("view_penandatangan_jabatan");
+        const penandatanganJabatan = document.getElementById("penandatangan_jabatan");
+        if (viewPenandatanganJabatan) {
+          viewPenandatanganJabatan.innerText = (penandatanganJabatan ? penandatanganJabatan.value : "_______________") + ",";
+        }
+      } catch (e) {
+        console.error("Preview render failed silently:", e);
+      }
+    }
+
+    function setupGlobalListeners() {
+      const liveInputs = [
+        "no_agenda", "bulan_surat", "tanggal_st", 
+        "perusahaan_tugas", "kota_tugas", "kategori_spesimen", 
+        "nama_lokal_spesimen", "nama_ilmiah_spesimen", "tanggal_pelaksanaan",
+        "penandatangan_nama", "penandatangan_nip", "penandatangan_jabatan"
+      ];
+      liveInputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener("input", updateLivePreview);
+          el.addEventListener("change", updateLivePreview);
+        }
+      });
+    }
+
+    // --- INTEGRASI BACKEND DATA ---
+    function loadMasterPegawai() {
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run
+          .withSuccessHandler(function(data) {
+            if (data && !data.error) {
+              masterPegawai = data;
+              populateSignatoryDropdown();
+              renderPetugasInputs();
+            }
+          })
+          .getPegawaiData();
+      } else {
+        masterPegawai = [
+          { nama: "Witono, S.Hut", nip: "19791223 200012 1 001", jabatan: "PEH Ahli Muda", peran: "Petugas" },
+          { nama: "Ahmad Ripai, S.Hut", nip: "19800412 200012 1 003", jabatan: "PEH Ahli Muda", peran: "Petugas" },
+          { nama: "Suriawati Halim, S.Hut., M.P.", nip: "19751127 200003 2 001", jabatan: "Kepala Seksi KSDA Wilayah II", peran: "Penandatangan" }
+        ];
+        populateSignatoryDropdown();
+        renderPetugasInputs();
+      }
+    }
+
+    function populateSignatoryDropdown() {
+      const select = document.getElementById("penandatangan_select");
+      if (!select) return;
+      select.innerHTML = `<option value="">-- Manual --</option>`;
+      masterPegawai.forEach((peg, index) => {
+        if (peg.peran === "Penandatangan") {
+          select.innerHTML += `<option value="${index}">${peg.nama}</option>`;
+        }
+      });
+    }
+
+    function autoFillSignatory() {
+      const select = document.getElementById("penandatangan_select");
+      const idx = select ? select.value : "";
+      if (idx !== "") {
+        const peg = masterPegawai[idx];
+        document.getElementById("penandatangan_nama").value = peg.nama;
+        document.getElementById("penandatangan_nip").value = peg.nip;
+        document.getElementById("penandatangan_jabatan").value = peg.jabatan;
+      } else {
+        document.getElementById("penandatangan_nama").value = "";
+        document.getElementById("penandatangan_nip").value = "";
+        document.getElementById("penandatangan_jabatan").value = "";
+      }
+      updateLivePreview();
+    }
+
+    // --- TEMPLATE DEFAULT PT. CAHAYA GAHARU ---
+    function loadTemplateDefault() {
+      const elFormId = document.getElementById("form-id");
+      if (elFormId) elFormId.value = "";
+      
+      const elNoAgenda = document.getElementById("no_agenda");
+      if (elNoAgenda) elNoAgenda.value = "248";
+
+      const elBulanSurat = document.getElementById("bulan_surat");
+      if (elBulanSurat) elBulanSurat.value = "06";
+
+      const elTanggalSt = document.getElementById("tanggal_st");
+      if (elTanggalSt) elTanggalSt.value = "2026-06-15";
+
+      // Isi array Dinamis Dasar (Dimulai dari Dasar 2)
+      dasarData = [
+        "Surat Keputusan Kepala Balai KSDA Nomor: SK. 91 /K.18/TU/KSA.4.2/04/2025, tentang Persetujuan Pengambilan atau Penangkapan Tumbuhan dan Satwa Liar Jenis Gaharu/Kemedangan Yang Tidak Dilindungi Undang-Undang Kepada PT. Cahaya Gaharu Berkah;",
+        "Surat Permohonan PT. Cahaya Gaharu Berkah : 08/CGB/SMD/ VII/2026, tentang Permohonan SATS-DN."
+      ];
+
+      // Isi array Dinamis Petugas
+      petugasData = [
+        { nama: "Witono, S.Hut", nip: "19791223 200012 1 001", jabatan: "PEH Ahli Muda" },
+        { nama: "Ahmad Ripai, S.Hut", nip: "19800412 200012 1 003", jabatan: "PEH Ahli Muda" }
+      ];
+
+      // Isian Terstruktur Tugas 1
+      document.getElementById("perusahaan_tugas").value = "PT. Cahaya Gaharu Berkah";
+      document.getElementById("kota_tugas").value = "Samarinda";
+      document.getElementById("kategori_spesimen").value = "tumbuhan";
+      document.getElementById("nama_lokal_spesimen").value = "Kemedangan";
+      document.getElementById("nama_ilmiah_spesimen").value = "Aquilaria malacensis";
+      document.getElementById("tanggal_pelaksanaan").value = "2026-06-15";
+
+      const elPenandatanganNama = document.getElementById("penandatangan_nama");
+      if (elPenandatanganNama) elPenandatanganNama.value = "Suriawati Halim, S.Hut., M.P.";
+
+      const elPenandatanganNip = document.getElementById("penandatangan_nip");
+      if (elPenandatanganNip) elPenandatanganNip.value = "19751127 200003 2 001";
+
+      const elPenandatanganJabatan = document.getElementById("penandatangan_jabatan");
+      if (elPenandatanganJabatan) elPenandatanganJabatan.value = "Kepala Seksi KSDA Wilayah II";
+
+      renderDasarInputs();
+      renderPetugasInputs();
+      updateLivePreview();
+      showToast("Isian template default berhasil dimuat!");
+    }
+
+    function resetForm() {
+      const elForm = document.getElementById("st-form");
+      if (elForm) elForm.reset();
+
+      const elFormId = document.getElementById("form-id");
+      if (elFormId) elFormId.value = "";
+
+      dasarData = [];
+      petugasData = [];
+      renderDasarInputs();
+      renderPetugasInputs();
+      updateLivePreview();
+      showToast("Form dikosongkan.");
+    }
+
+    // --- INTEGRASI AJAX KE GOOGLE SHEETS ---
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById("btn-submit");
+      if (!btn) return;
+
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-2"></i>Menyimpan...`;
+
+      // Menimbang Baku List
+      const menimbangBaku = [
+        "bahwa dalam rangka memberikan pelayanan kepada masyarakat untuk pemanfaatan tumbuhan dan satwa liar;",
+        "bahwa dalam kegiatan pemanfaatan tumbuhan dan satwa liar beserta bagian-bagiannya, perlu diterbitkan SATS-DN untuk pengangkutannya;",
+        "bahwa sebelum diterbitkannya SATS-DN perlu dilakukan pemeriksaan terhadap spesimen yang akan diangkut."
+      ];
+
+      // Kompilasi Tugas 1
+      const pers = document.getElementById("perusahaan_tugas").value;
+      const kt = document.getElementById("kota_tugas").value;
+      const kat = document.getElementById("kategori_spesimen").value;
+      const lok = document.getElementById("nama_lokal_spesimen").value;
+      const ilm = document.getElementById("nama_ilmiah_spesimen").value;
+      const tglPelRaw = document.getElementById("tanggal_pelaksanaan").value;
+      const tglPelFormatted = formatIndoDate(tglPelRaw);
+      const compiledTugas1 = `Melaksanakan pemeriksaan spesimen di kantor ${pers}, ${kt} untuk bagian ${kat} jenis ${lok} (<i>${ilm}</i>) selama 1 (satu) hari pada tanggal ${tglPelFormatted}.`;
+
+      const formData = {
+        id: document.getElementById("form-id") ? document.getElementById("form-id").value : "",
+        no_agenda: document.getElementById("no_agenda") ? document.getElementById("no_agenda").value : "",
+        bulan: document.getElementById("bulan_surat") ? document.getElementById("bulan_surat").value : "",
+        tanggal_st: document.getElementById("tanggal_st") ? document.getElementById("tanggal_st").value : "",
+        tempat_st: "Tenggarong", // Baku
+        menimbang: menimbangBaku, // Baku
+        dasar: dasarData,
+        petugas: petugasData,
+        tugas_untuk_1: compiledTugas1,
+        tugas_untuk_2: "Membuat laporan tertulis setelah selesainya kegiatan yang dituangkan ke dalam Berita Acara Pemeriksaan (BAP).", // Baku
+        penandatangan_nama: document.getElementById("penandatangan_nama") ? document.getElementById("penandatangan_nama").value : "",
+        penandatangan_nip: document.getElementById("penandatangan_nip") ? document.getElementById("penandatangan_nip").value : "",
+        penandatangan_jabatan: document.getElementById("penandatangan_jabatan") ? document.getElementById("penandatangan_jabatan").value : ""
+      };
+
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run
+          .withSuccessHandler(function(response) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            if (response.success) {
+              showToast(response.message);
+              const elFormId = document.getElementById("form-id");
+              if (elFormId) elFormId.value = response.id;
+              loadHistoryData();
+            } else {
+              showToast("Gagal menyimpan: " + response.error, 'error');
+            }
+          })
+          .withFailureHandler(function(err) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            showToast("Gagal menghubungkan: " + err, 'error');
+          })
+          .saveSuratTugas(formData);
+      } else if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== "") {
+        // Fallback Fetch untuk pengujian di luar GAS jika URL terisi
+        fetch(GAS_WEB_APP_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "saveSuratTugas", data: formData })
+        })
+        .then(res => res.json())
+        .then(response => {
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          if (response.success) {
+            showToast(response.message);
+            const elFormId = document.getElementById("form-id");
+            if (elFormId) elFormId.value = response.id;
+            loadHistoryData();
+          } else {
+            showToast("Gagal menyimpan: " + response.error, 'error');
+          }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          showToast("Error Fetch: " + err, "error");
+        });
+      } else {
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          showToast("Simulasi Lokal: Surat Berhasil Disimpan!");
+          const mockId = formData.id || "ST-" + Date.now();
+          const elFormId = document.getElementById("form-id");
+          if (elFormId) elFormId.value = mockId;
+          formData.id = mockId;
+          formData.timestamp = new Date().toISOString();
+          const existingIdx = listSuratTugas.findIndex(x => x.id === mockId);
+          if (existingIdx > -1) {
+            listSuratTugas[existingIdx] = formData;
+          } else {
+            listSuratTugas.unshift(formData);
+          }
+          renderHistoryTable(listSuratTugas);
+        }, 1000);
+      }
+    }
+
+    function loadHistoryData() {
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run
+          .withSuccessHandler(function(data) {
+            if (Array.isArray(data)) {
+              listSuratTugas = data;
+              renderHistoryTable(data);
+            }
+          })
+          .getSuratTugasList();
+      } else if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== "") {
+        fetch(GAS_WEB_APP_URL + "?action=getSuratTugasList")
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            listSuratTugas = data;
+            renderHistoryTable(data);
+          }
+        });
+      } else {
+        listSuratTugas = [];
+        renderHistoryTable(listSuratTugas);
+      }
+    }
+
+    function renderHistoryTable(data) {
+      const tbody = document.getElementById("history-list");
+      if (!tbody) return;
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500">Arsip kosong.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = "";
+      data.forEach(item => {
+        const stNum = `ST. ${item.no_agenda || '-'} /K.18/SKSDAW II/${item.bulan || '-'}/2026`;
+        const structured = parseTugasUntuk(item.tugas_untuk_1);
+
+        let pList = [];
+        try {
+          pList = typeof item.petugas_json === "string" ? JSON.parse(item.petugas_json) : (item.petugas || []);
+        } catch(e) { pList = []; }
+
+        const rNama1 = pList[0] ? pList[0].nama : "-";
+        const rNama2 = pList[1] ? pList[1].nama : "";
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+            <td class="px-6 py-4 font-semibold text-slate-950 dark:text-slate-100">${stNum}</td>
+            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">${item.tanggal_st || '-'}</td>
+            <td class="px-6 py-4 text-sm">
+              <div class="font-medium text-emerald-600 dark:text-emerald-400">${structured.perusahaan}</div>
+              <div class="text-xs text-slate-400 line-clamp-1">${item.tugas_untuk_1 || ''}</div>
+            </td>
+            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
+              <span class="block font-medium">${rNama1}</span>
+              <span class="block text-xs text-slate-400">${rNama2}</span>
+            </td>
+            <td class="px-6 py-4 text-center">
+              <div class="flex items-center justify-center space-x-2">
+                <button onclick="editSuratTugas('${item.id}')" class="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-400" title="Edit">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button onclick="previewAndPrint('${item.id}')" class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400" title="Cetak">
+                  <i class="fa-solid fa-print"></i>
+                </button>
+                <button onclick="handleDelete('${item.id}')" class="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400" title="Hapus">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function filterHistoryTable() {
+      const searchInput = document.getElementById("search-input");
+      const searchVal = searchInput ? searchInput.value.toLowerCase() : "";
+      const filtered = listSuratTugas.filter(item => {
+        const matchesNo = (item.no_agenda && item.no_agenda.toLowerCase().includes(searchVal));
+        const matchesTugas = (item.tugas_untuk_1 && item.tugas_untuk_1.toLowerCase().includes(searchVal));
+        return matchesNo || matchesTugas;
+      });
+      renderHistoryTable(filtered);
+    }
+
+    function editSuratTugas(id) {
+      const item = listSuratTugas.find(x => x.id === id);
+      if (!item) return;
+
+      const elFormId = document.getElementById("form-id");
+      if (elFormId) elFormId.value = item.id;
+
+      const elNoAgenda = document.getElementById("no_agenda");
+      if (elNoAgenda) elNoAgenda.value = item.no_agenda || "";
+
+      const elBulanSurat = document.getElementById("bulan_surat");
+      if (elBulanSurat) elBulanSurat.value = item.bulan || "";
+
+      const elTanggalSt = document.getElementById("tanggal_st");
+      if (elTanggalSt) elTanggalSt.value = item.tanggal_st || "";
+
+      try {
+        dasarData = typeof item.dasar_json === "string" ? JSON.parse(item.dasar_json) : (item.dasar || []);
+        petugasData = typeof item.petugas_json === "string" ? JSON.parse(item.petugas_json) : (item.petugas || []);
+      } catch (e) {
+        dasarData = [];
+        petugasData = [];
+      }
+
+      // Bedah kembali tugas terstruktur dari string yang tersimpan
+      const parsed = parseTugasUntuk(item.tugas_untuk_1);
+      document.getElementById("perusahaan_tugas").value = parsed.perusahaan;
+      document.getElementById("kota_tugas").value = parsed.kota;
+      document.getElementById("kategori_spesimen").value = parsed.kategori;
+      document.getElementById("nama_lokal_spesimen").value = parsed.lokal;
+      document.getElementById("nama_ilmiah_spesimen").value = parsed.ilmiah;
+      document.getElementById("tanggal_pelaksanaan").value = parsed.tanggal;
+
+      const elPenandatanganNama = document.getElementById("penandatangan_nama");
+      if (elPenandatanganNama) elPenandatanganNama.value = item.penandatangan_nama || "";
+
+      const elPenandatanganNip = document.getElementById("penandatangan_nip");
+      if (elPenandatanganNip) elPenandatanganNip.value = item.penandatangan_nip || "";
+
+      const elPenandatanganJabatan = document.getElementById("penandatangan_jabatan");
+      if (elPenandatanganJabatan) elPenandatanganJabatan.value = item.penandatangan_jabatan || "";
+
+      renderDasarInputs();
+      renderPetugasInputs();
+      updateLivePreview();
+      switchTab('buat');
+      showToast("Data arsip berhasil dimuat ke formulir.");
+    }
+
+    function previewAndPrint(id) {
+      editSuratTugas(id);
+      setTimeout(() => {
+        printSuratTugas();
+      }, 350);
+    }
+
+    function printSuratTugas() {
+      window.print();
+    }
+
+    function handleDelete(id) {
+      const item = listSuratTugas.find(x => x.id === id);
+      if (!item) return;
+
+      openConfirmModal(
+        "Hapus Surat Tugas",
+        `Apakah Anda yakin ingin menghapus arsip surat tugas dengan Nomor Agenda: ${item.no_agenda || '-'}?`,
+        () => {
+          if (typeof google !== 'undefined' && google.script) {
+            google.script.run
+              .withSuccessHandler(function(res) {
+                if (res.success) {
+                  showToast(res.message);
+                  loadHistoryData();
+                } else {
+                  showToast("Gagal: " + res.message, 'error');
+                }
+              })
+              .deleteSuratTugas(id);
+          } else if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== "") {
+            fetch(GAS_WEB_APP_URL, {
+              method: "POST",
+              body: JSON.stringify({ action: "deleteSuratTugas", id: id })
+            })
+            .then(res => res.json())
+            .then(res => {
+              if (res.success) {
+                showToast(res.message);
+                loadHistoryData();
+              } else {
+                showToast("Gagal: " + res.message, 'error');
+              }
+            });
+          } else {
+            listSuratTugas = listSuratTugas.filter(x => x.id !== id);
+            renderHistoryTable(listSuratTugas);
+            showToast("Arsip simulasi lokal terhapus!");
+          }
+        }
+      );
+    }
+  </script>
+</body>
+</html>
